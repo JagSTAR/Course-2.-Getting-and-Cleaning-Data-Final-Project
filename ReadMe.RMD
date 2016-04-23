@@ -92,7 +92,7 @@ Under these 5 Headings there are 12 subparts that refer to sections of the code 
 * The following code may be used to read the "TidyData - JagSTAR.txt" file back into you R console
 ```{r, eval = FALSE}
 
-TidyData<-read.table("file path")
+TidyData<-read.table("file path", header = TRUE)
 
 ```
 
