@@ -1,0 +1,182 @@
+---
+title: 'ReadMe: Coursera - Getting and Cleaning Data Assignment'
+author: "Arun Victor Jagga"
+date: "April 23, 2016"
+output: html_document
+---
+
+## JagSTAR: Coursera - Getting and Cleaning Data Assignment Code
+
+The "TidyData - JagSTAR.txt" file contains a table with tidy data derived from the processing of raw data from the mentioned study above. The raw data is downloadable from "https://d396qusza40orc.cloudfront.net/getdata%2Fprojectfiles%2FUCI%20HAR%20Dataset.zip" and described at "http://archive.ics.uci.edu/ml/datasets/Human+Activity+Recognition+Using+Smartphones".
+
+##Summary
+
+There were 561 variables that were measured or computed from the readings taken via the accelerometer and gyroscope and multiple instances of the same variables for the same Activity measured with the same Subject. 
+
+The Variables measured during the study were filtered to only include the mean and standard deviation values such that no variable measured in the original raw data was included in the tidy data that excluded any instance of the terms "mean" or "std". These variables surmise the variables described below with the exception of the addition of the two variables "ActivityNames" and "SubjectIDs". 
+
+Once the data was filtered it was seperated into tables one for each Activity and each Subject. The mean of each of the filtered variables was computed for each table. The tables were subsequently recombined to give the final data set. 
+
+##Detailed Breakdown of Processing Code
+
+The Processing Code is provided below broken into sections along with the following description of each section.
+
+The 5 steps of the Programming Assignment will be outlined below, with prefix "Code Requirement" 
+
+Under these 5 Headings there are 12 subparts that refer to sections of the code (Associated by the Section Numbers) and are used to achieve the Overarching Code Requirement 
+
+###Code Requirement 1: Merges the training and the test sets to create one data set.
+####Section 1: Initialize Function
+* This section of the code defines the function and the arguments it has. 
+* The function is defined with one argument **x** that should be passed the path to the original raw data file by the user
+* The default value of the argument **x** is the name of the zip file so it the user sets their workin directory to where the file is located they can just run the function as is 
+
+####Section 2: Read in Data
+* The code in this section takes the argument **x** from the user and uses the path to unzip and download all of the data files to be processed
+
+####Section 3: Combine Data
+* The code in this section takes the associated data from the test and train sets and combines them together to form full data set for the 3 tables
++ FeatureData: The variable measurements for each of the records arranged by feature variable 
++ ActivityTypes: The activities performed for each record 
++ SubjectIDs: The subject that measurements were taken on for each record
+* The resulting tables meat the **Code Requirement** for this section 
+
+
+###Code Requirement 3: Uses descriptive activity names to name the activities in the data set
+####Section 4: Rename Activities Identifiers via Labels 
+* The code in this section renames all of the numeral type activity identifiers with their character descriptions via the activity_labels.txt file provided with the data set 
+* The following labels were replaced using the gsub() function
++ 1 -> Walking
++ 2 -> WalkingUpstairs
++ 3 -> WalkingDownstairs
++ 4 -> Sitting
++ 5 -> Standing
++ 6 -> Laying
+* The resulting data set meats the **Code Requirement** for this section 
+
+####Code Requirement 4: Appropriately labels the data set with descriptive variable names.
+#####Section 5: Rename Identifier Columns
+
+* The code in this section renames the columns of each of the tables created in Section 3 to give them descriptive variable names
+* More specifically the features.txt file in the original dataset is used to name all of the variables in the FeatureData set so they are descriptive of what their measurements represent (see code book for more details)
+* The resulting data set meats the **Code Requirement** for this section 
+   
+####Code Requirement 2: Extracts only the measurements on the mean and standard deviation for each measurement.
+#####Section 6: Bind Identifiers and Data Together
+* The code in this section Binds the two identifier tables with the feature data measurment tables to form the full dataset 
+* specifically after binding the measurments for each measurement variable become linked with their respective identifier data describing the activity being preformed during the measurement and the subject performing the measurement
+
+#####Section 7: Extract Mean and Standard Deviation Associated Variable Columns 
+* The code in this section subsets the full dataset for only the columns having measurement variables containing any instance of the terms "mean" or "std" (abbreviation for standard deviation) as well asthe two identifier columns ActivityNames and SubjectIDs
+* The resulting data set meats the **Code Requirement** for this section 
+    
+####Code Requirement 5: From the data set in step 4, creates a second, independent tidy data set with the average of each variable for each activity and each subject.
+#####Section 8: Split Data for Processing of Means Factored by Subject and Activity
+* The code in this section splits the records of the data factored by their activities and subjects into a list of tables  
+
+#####Section 9: Compute Means for Split Data and Recombine with Identifier Variables
+* The code in this section computes the column means for each variable measurement in each table and forms a table which is recombined with their respective identifier columns.
+    
+        
+#####Section 10: Recombine Data 
+* The code in this section recombines the list of tables derived from the previous section into a full dataset of means.
+* The resulting data set meats the **Code Requirement** for this section 
+    
+#####Section 11: Rename Columns and Un-name Rows for Tidy Appearance and Consistency
+* The code in this section renames the columns and rows of the full dataset of means for tidyness 
+    
+#####Section 12: Return The Final Result
+* The code in this section returns the final data frame for use by the user.     
+
+##Reading the Tidy Data 
+* The following code may be used to read the "TidyData - JagSTAR.txt" file back into you R console
+```{r, eval = FALSE}
+
+TidyData<-read.table("file path")
+
+```
+
+##Processing Code
+
+```{r}
+
+##Section 1: Initialize Function 
+
+Run_Analysis<- function(x = "getdata-projectfiles-UCI HAR Dataset.zip") {
+    
+    ##Section 2: Read in Data 
+    
+    X_test<-read.table(unzip(x, "UCI HAR Dataset/test/X_test.txt"), header = FALSE)
+    y_test<-read.table(unzip(x, "UCI HAR Dataset/test/y_test.txt"), header = FALSE)
+    subject_test<-read.table(unzip(x, "UCI HAR Dataset/test/subject_test.txt"), header = FALSE)
+    X_train<-read.table(unzip(x, "UCI HAR Dataset/train/X_train.txt"), header = FALSE)
+    y_train<-read.table(unzip(x, "UCI HAR Dataset/train/y_train.txt"), header = FALSE)
+    subject_train<-read.table(unzip(x, "UCI HAR Dataset/train/subject_train.txt"), header = FALSE)
+    FeatureLabels<-read.table(unzip(x, "UCI HAR Dataset/features.txt"), header = FALSE, colClasses = c("numeric", "character"))[,2]
+    
+    ##Section 3: Combine Data
+    
+    FeatureData<-rbind(X_test, X_train)
+    ActivityTypes<-rbind(y_test, y_train)
+    SubjectIDs<-rbind(subject_test, subject_train)
+    
+    ##Section 4: Rename Activities identifiers via Labels
+    
+    ActivityNames<-ActivityTypes
+    
+    ActivityNames[,1]<-gsub("1","Walking", ActivityNames[,1])
+    ActivityNames[,1]<-gsub("2","WalkingUpstairs", ActivityNames[,1])
+    ActivityNames[,1]<-gsub("3","WalkingDownstairs", ActivityNames[,1])
+    ActivityNames[,1]<-gsub("4","Sitting", ActivityNames[,1])
+    ActivityNames[,1]<-gsub("5","Standing", ActivityNames[,1])
+    ActivityNames[,1]<-gsub("6","Laying", ActivityNames[,1])
+    
+    ##Section 5: Rename Identifier Columns
+    
+    colnames(FeatureData)<-FeatureLabels
+    colnames(SubjectIDs)<-"SubjectIDs"
+    colnames(ActivityNames)<-"ActivityNames"
+    
+    ##Section 6: Bind Identifiers and Data Together
+    
+    FullSet<-cbind(SubjectIDs, ActivityNames, FeatureData)
+    
+    ##Section 7: Extract Mean and Standard Deviation Associated Variable Columns 
+    
+    MeanSet<-FullSet[,grep("[Mm]ean|[Ss]td|SubjectIDs|ActivityNames",colnames(FullSet))]
+    
+    ##Section 8: Split Data for Processing of Means Factored by Subject and Activity
+    
+    SplitMeanSet<-split(MeanSet, list(MeanSet[,1], MeanSet[,2]))
+                        
+    ##Section 9: Compute Means for Split Data and Recombine with Identifier Variables
+    
+    ColMeanSet<-lapply(SplitMeanSet, function(x) {
+            
+        ActivityMean<-x[1,1:2]
+        LengthAM<-length(x[1,])
+        cbind(ActivityMean[1,1:2],as.data.frame(as.list(colMeans(x[,3:LengthAM])))[,])
+    }
+    )
+        
+    ##Section 10: Recombine Data 
+    
+    FinalSet<-do.call(rbind,ColMeanSet)
+    
+    ##Section 11: Rename Columns and Un-name Rows for Tidy Appearance and Consistency
+    
+    colnames(FinalSet)<-names(MeanSet)
+    rownames(FinalSet)<-c(1:length(FinalSet[,1]))
+    
+    ##Section 12: Return The Final Result
+    
+    FinalSet
+        
+}
+
+
+```
+
+
+
+
